@@ -45,3 +45,5 @@
 
 .vscode
 build/
+
+lvgl/
