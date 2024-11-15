@@ -39,7 +39,7 @@ pico_sdk_init()
 # to locate all configuration files (def.h, lv_conf.h).
 include_directories(./) 
 
-# LVGL
+# uncomment the following lines to add LVGL capabilities
 #set(LVGL_PATH  "./lvgl/")
 #add_subdirectory(${LVGL_PATH})
 #include_directories(${LVGL_PATH})
@@ -55,7 +55,7 @@ set(DRIVERS_FILES
         Drivers/Chipsets/ILI9488.c)
 
 add_executable(Pico_TFT main.c
-        #lv_port_disp.c
+        #lv_port_disp.c         # uncomment this line to add LVGL capabilities
         ${DRIVERS_FILES})
 
 
@@ -74,7 +74,7 @@ pico_enable_stdio_usb(Pico_TFT 0)
 # Add the standard library to the build
 target_link_libraries(Pico_TFT
         pico_stdlib
-        #lvgl
+        #lvgl               # uncomment this line to add LVGL capabilities
         ) 
 
 

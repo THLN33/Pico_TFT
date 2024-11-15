@@ -14,3 +14,5 @@ The 8-bit indexed mode optimizes RAM, the colors are chosen from a palette of 65
 In the 8-bit mode, the colors are defined in RGB332.
 The colors in 16-bit RGB565 mode (i.e. 5 bits for red, 6 for green and 5 for blue).
 The indexed mode requires the use of two additional DMA channels.
+
+I also added the possibility of using the LVGL library (https://github.com/lvgl/lvgl), to do this you just have to uncomment the lines indicated in the CMakeLists.txt file to add LVGL features, and of course include the library code in the ./lvgl/ directory 
