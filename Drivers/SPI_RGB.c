@@ -13,10 +13,51 @@
 #include "Chipsets/Generics_Regs.h"
 
 
+/*
+                            TFT_COLOR==TFT_COLOR_16BITS         TFT_COLOR==TFT_COLOR_18BITS
 
-#if (TFT_COLOR == TFT_COLOR_16BITS)   
-//#define DMA_LCD true
-#endif
+    _MODE_Index_8bits               _index_to_16                         _index_to_24 
+
+    _MODE_RGB332_8bits              _8_to_16                             _8_to_24
+
+    _MODE_RGB565_16bits             _direct_16                           _16_to_24
+
+    _MODE_RGB666_18bits             not supported                       direct_24      ( not used )   
+
+    _MODE_RGB666_24bits             not supported                       direct_24      ( not used )   
+*/
+
+#if (TFT_COLOR == TFT_COLOR_16BITS) 
+
+#if (MODE_RGB == _MODE_Index_8bits)
+    #define _index_to_16         1
+#elif (MODE_RGB == _MODE_RGB332_8bits)
+    #define _8_to_16            2
+#elif (MODE_RGB == _MODE_RGB565_16bits)
+    //#define DMA_LCD true
+    #define _direct_16           3
+#else
+#error mode not supported !
+#endif  /* MODE_RGB */
+
+#elif (TFT_COLOR == TFT_COLOR_18BITS) || (TFT_COLOR == TFT_COLOR_24BITS) 
+
+#if (MODE_RGB == _MODE_Index_8bits)
+    #define _index_to_24         4
+#elif (MODE_RGB == _MODE_RGB332_8bits)
+    #define _8_to_24            5
+#elif (MODE_RGB == _MODE_RGB565_16bits)
+    #define _16_to_24           6
+#elif (MODE_RGB == _MODE_RGB666_18bits) || (MODE_RGB == _MODE_RGB666_24bits)
+    #define _direct_24          7
+    #warning Not recommanded : This mode use lot of memory usage!    
+//#error mode not used, DMA support only 8 or 16 bits transfert !
+#else
+#error mode not supported !
+#endif  /* MODE_RGB */
+
+#endif  /* TFT_COLOR */
+
 
 #define CS_L        gpio_put(TFT_CS, LOW)
 #define CS_H        gpio_put(TFT_CS, HIGH)
@@ -35,16 +76,12 @@
 
 #define SPI_WRITTE_BYTE         spi_get_hw(TFT_SPI_PORT)->dr        
 
-void begin_tft_write(void) {
-    //#warning '->'
-    //spi_init(TFT_SPI_PORT, SPI_FREQUENCY>>1);    
-    //sleep_us(10);   
+void begin_tft_write(void) {  
     CS_L;
 }
 
 void end_tft_write(void) {
-    CS_H;
-    //spi_deinit(TFT_SPI_PORT);    
+    CS_H;   
 }
 
 
@@ -53,7 +90,6 @@ inline void tft_Write_8(uint8_t data) {
 }
 
 inline void tft_Write_16(uint16_t data) {
-    //spi_write16_blocking(TFT_SPI_PORT, &data, 2);
     uint8_t h = data>>8;
     uint8_t l = data;
     spi_write_blocking(TFT_SPI_PORT, &h, 1);
@@ -82,50 +118,6 @@ void writedata(uint8_t d) {
     //CS_L;        // Allow more hold time for low VDI rail
     end_tft_write();
 }
-
-/*
-                            TFT_COLOR==TFT_COLOR_16BITS         TFT_COLOR==TFT_COLOR_18BITS
-
-    _MODE_Index_8bits               _index_to_16                         _index_to_24 
-
-    _MODE_RGB332_8bits              _8_to_16                             _8_to_24
-
-    _MODE_RGB565_16bits             _direct_16                           _16_to_24
-
-    _MODE_RGB666_18bits             not supported                       direct_24      ( not used )   
-
-    _MODE_RGB666_24bits             not supported                       direct_24      ( not used )   
-*/
-
-#if (TFT_COLOR == TFT_COLOR_16BITS) 
-
-#if (MODE_RGB == _MODE_Index_8bits)
-    #define _index_to_16         1
-#elif (MODE_RGB == _MODE_RGB332_8bits)
-    #define _8_to_16            2
-#elif (MODE_RGB == _MODE_RGB565_16bits)
-    #define _direct_16           3
-#else
-#error mode not supported !
-#endif  /* MODE_RGB */
-
-#elif (TFT_COLOR == TFT_COLOR_18BITS) || (TFT_COLOR == TFT_COLOR_24BITS) 
-
-#if (MODE_RGB == _MODE_Index_8bits)
-    #define _index_to_24         4
-#elif (MODE_RGB == _MODE_RGB332_8bits)
-    #define _8_to_24            5
-#elif (MODE_RGB == _MODE_RGB565_16bits)
-    #define _16_to_24           6
-#elif (MODE_RGB == _MODE_RGB666_18bits) || (MODE_RGB == _MODE_RGB666_24bits)
-    #define _direct_24          7
-    #warning Not recommanded : This mode use lot of memory usage!    
-//#error mode not used, DMA support only 8 or 16 bits transfert !
-#else
-#error mode not supported !
-#endif  /* MODE_RGB */
-
-#endif  /* TFT_COLOR */
 
 
 
@@ -555,153 +547,5 @@ void pushImage(const void *buffer, uint32_t len) {
 #endif
 
 #endif
-
-#ifdef _ZZ
-    uint8_t r, g, b;
-
-    while (len--) {
-        uint32_t color = *image++;
-
-#if (MODE_RGB == _MODE_RGB332_8bits)  
-        b = color & 0x03;
-        g = (color>>2) & 0x07;
-        r = (color>>5) & 0x07;
-
-#elif (MODE_RGB == _MODE_RGB565_16bits)
-/*
-        b = color & 0x001F;
-
-        if (b&1) {
-            b<<=3;
-            b |= 0x0007;            
-        } else {
-            b<<=3;
-        }
-
-        g = (color>>5) & 0x003F;
-
-        if (g&1) {
-            g<<=2;
-            g |= 0x0003;            
-        } else {
-            g<<=2;
-
-        }
-
-        r = (color>>11) & 0x001F;
-
-        if (r&1) {
-            r<<=3;
-            r |= 0x0007;            
-        } else {
-            r<<=3;
-        }    
-*/
-#else
-#error mode not supported!
-#endif
-
-
-#if (TFT_COLOR == TFT_COLOR_16BITS)   
-        color = b<<3;
-        color += g<<8;
-        color += r<<13;   
-
-
-        uint8_t c[2];   
-        c[0] = color>>8;
-        c[1] = color;        
-        spi_write_blocking(TFT_SPI_PORT, c, 2);
-#elif (TFT_COLOR == TFT_COLOR_18BITS)
-
-#if (MODE_RGB == _MODE_RGB332_8bits)  
-        color = b<<6;
-        color += g<<13;
-        color += r<<21; 
-
-        uint8_t c[3];
-        c[0] = color>>16;
-        c[1] = color>>8;
-        c[2] = color;   
-#elif (MODE_RGB == _MODE_RGB565_16bits)
-/*
-        color = b<<3;
-        color += g<<10;
-        color += r<<19;     
-*/        
-#else
-#error mode not supported!
-#endif
-        uint8_t c[3];
-        /*        
-        c[0] = r;
-        c[1] = g;
-        c[2] = b;
-        */
-        color = color_16_to_24(color);
-        c[0] = color>>16;
-        c[1] = color>>8;
-        c[2] = color;  
-        spi_write_blocking(TFT_SPI_PORT, c, 3);    
-#elif (TFT_COLOR == TFT_COLOR_24BITS)
-#error mode not supported!
-#endif
-    }
-
-#endif
-
-
-
-void test_spi_init(void) {
-
-    //begin_tft_write();
-    //TFT_Init_Registers();
-    //end_tft_write();
-
-/*
-    writecommand(0x00);
-    writedata(0x01);
-    writecommand(0xFF);    
-    writedata(0x02);    
-    writedata(0x03);
-*/
-}
-
-
-void test_spi_rgb(void) {
-
-    begin_tft_write();
-
-
-    uint16_t x = 80;
-    uint16_t w = 80;    
-    uint16_t y = 80;
-    uint16_t h = 80;
-
-    setWindow(x, y, x+w-1, y+h-1);
-    uint len = w * h;
-
-
-
-#if (TFT_COLOR == TFT_COLOR_16BITS)   
-    uint8_t c[] = {0xFF, 0xFF};
-    while (len--) {
-        //tft_Write_16(0xFFFF);
-        spi_write_blocking(TFT_SPI_PORT, c, 2);
-    }
-#elif (TFT_COLOR == TFT_COLOR_18BITS)  
-    uint8_t c[] = {0x0F, 0x0F, 0x0F};
-    while (len--) {
-        spi_write_blocking(TFT_SPI_PORT, c, 3);
-    } 
-#elif (TFT_COLOR == TFT_COLOR_24BITS)
-    uint8_t c[] = {0xFF, 0xFF, 0xFF};
-    while (len--) {
-        spi_write_blocking(TFT_SPI_PORT, c, 3);
-    }  
-#endif
-
-    end_tft_write();
-}
 
 #endif /* INTERFACE_LCD == INTERFACE_LCD_SPI */
