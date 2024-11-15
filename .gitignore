@@ -42,8 +42,9 @@
 *.idb
 *.pdb
 
-
 .vscode
+
 build/
 
 lvgl/
+
