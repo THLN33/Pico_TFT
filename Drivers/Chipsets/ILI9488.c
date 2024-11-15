@@ -182,44 +182,4 @@ void ILI9488_Rotation(uint8_t r, uint16_t *_width, uint16_t *_height) {
 }
 
 
-
-
-
-#ifdef _OLD
-void setWindow(int32_t x0, int32_t y0, int32_t x1, int32_t y1) {
-#ifdef USE_SPI
-    SPI_BUSY_CHECK;
-#endif
-    DC_C; 
-    tft_Write_8(TFT_CASET);
-    DC_D;
-    tft_Write_32C(x0, x1);
-
-    DC_C; 
-    tft_Write_8(TFT_PASET);
-    DC_D; 
-    tft_Write_32C(y0, y1);
-
-    DC_C; 
-    tft_Write_8(TFT_RAMWR);
-    DC_D;
-}
-
-
-
-
-void ILI9488_Init(void) {
-    ILI9488_Hardware_Init();
-    ILI9488_HardReset();
-    ILI9488_Init_Registers();
-
-    setRotation(3);
-}
-
-#endif
-
-
-
-
-
 #endif /* LCD_BOARD == LCD_ILI9488_BOARD */
