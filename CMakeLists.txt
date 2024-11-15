@@ -40,10 +40,10 @@ pico_sdk_init()
 include_directories(./) 
 
 # LVGL
-set(LVGL_PATH  "./lvgl/")
-add_subdirectory(${LVGL_PATH})
-include_directories(${LVGL_PATH})
-add_definitions(-DLVGL=1)
+#set(LVGL_PATH  "./lvgl/")
+#add_subdirectory(${LVGL_PATH})
+#include_directories(${LVGL_PATH})
+#add_definitions(-DLVGL=1)
 
 
 # Add executable. Default name is the project name, version 0.1
@@ -55,7 +55,7 @@ set(DRIVERS_FILES
         Drivers/Chipsets/ILI9488.c)
 
 add_executable(Pico_TFT main.c
-        lv_port_disp.c
+        #lv_port_disp.c
         ${DRIVERS_FILES})
 
 
@@ -74,7 +74,8 @@ pico_enable_stdio_usb(Pico_TFT 0)
 # Add the standard library to the build
 target_link_libraries(Pico_TFT
         pico_stdlib
-        lvgl) 
+        #lvgl
+        ) 
 
 
 # Add the standard include files to the build
